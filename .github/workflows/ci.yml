@@ -8,6 +8,19 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    # CI-only environment variables. These are dummy placeholders, NOT real
+    # secrets. `prisma generate` (via prisma.config.ts -> env("DATABASE_URL"))
+    # requires DATABASE_URL to be defined, but it never connects to a database.
+    # CI only generates Prisma Client and type-checks/builds TypeScript, so a
+    # fake localhost URL is sufficient and safe. The real Supabase/CoreMap
+    # database is never accessed in CI, and no real credentials are used here.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/community_info_news?schema=public
+      JWT_SECRET: dummy-ci-secret
+      NODE_ENV: test
+      DEMO_MODE: "false"
+      VITE_API_BASE_URL: http://localhost:3000
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
