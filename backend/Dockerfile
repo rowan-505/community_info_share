@@ -26,7 +26,6 @@ ENV NODE_ENV=${NODE_ENV}
 ENV DEMO_MODE=${DEMO_MODE}
 
 RUN npm run build
-RUN npm run migrate
 
 EXPOSE 3000
 
