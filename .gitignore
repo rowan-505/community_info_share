@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment (ignore every .env variant, keep the committed examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+frontend/dist/
+
+# Backend
+backend/dist/
+
+# Prisma (future)
+backend/prisma/*.db
+backend/prisma/*.db-journal
