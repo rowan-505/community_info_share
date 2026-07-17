@@ -15,6 +15,13 @@ export const adminReviewApi = {
     ).then((res) => res.data);
   },
 
+  unverify(publicId: string): Promise<CommunityPost> {
+    return request<ApiResponse<CommunityPost>>(
+      `/admin/community/posts/${publicId}/unverify`,
+      { method: "POST", auth: "required" },
+    ).then((res) => res.data);
+  },
+
   reject(publicId: string): Promise<CommunityPost> {
     return request<ApiResponse<CommunityPost>>(
       `/admin/community/posts/${publicId}/reject`,

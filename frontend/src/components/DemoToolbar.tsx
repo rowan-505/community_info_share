@@ -85,17 +85,23 @@ export function DemoToolbar({
   }
 
   return (
-    <section className="demo-toolbar" aria-label="Demo Mode">
+    <section className="demo-toolbar" aria-label="Showcase Demo Mode">
       <div className="demo-toolbar-head">
-        <strong>Demo Mode</strong>
-        <span className="demo-current">
+        <div>
+          <strong>Showcase Demo Mode</strong>
+          <p className="demo-hint">
+            Notifications are account-specific. Switch to Demo User to see
+            uploader notifications.
+          </p>
+        </div>
+        <span className="demo-current badge badge-warning">
           Current demo account: {currentDemoAccount ?? "none"}
         </span>
       </div>
       <div className="demo-toolbar-actions">
         <button
           type="button"
-          className="btn btn-small"
+          className="button button-secondary btn-small"
           disabled={busy}
           onClick={() => switchAccount(demoApi.loginUser, "User")}
         >
@@ -103,7 +109,7 @@ export function DemoToolbar({
         </button>
         <button
           type="button"
-          className="btn btn-small"
+          className="button button-secondary btn-small"
           disabled={busy}
           onClick={() => switchAccount(demoApi.loginReactor, "Reactor")}
         >
@@ -111,7 +117,7 @@ export function DemoToolbar({
         </button>
         <button
           type="button"
-          className="btn btn-small"
+          className="button button-secondary btn-small"
           disabled={busy}
           onClick={() => switchAccount(demoApi.loginAdmin, "Admin")}
         >
@@ -119,7 +125,7 @@ export function DemoToolbar({
         </button>
         <button
           type="button"
-          className="btn btn-small"
+          className="button button-secondary btn-small"
           disabled={busy}
           onClick={() =>
             run(async () => {
@@ -132,28 +138,28 @@ export function DemoToolbar({
         </button>
         <button
           type="button"
-          className="btn btn-small"
+          className="button button-secondary btn-small"
           disabled={busy}
           onClick={() =>
             run(async () => {
               await demoApi.runFull();
               onDemoDataChanged();
-            }, "Full demo ran: post is community_confirmed")
+            }, "Full demo ran: post is Community Confirmed")
           }
         >
           Run Full Demo
         </button>
         <button
           type="button"
-          className="btn btn-small demo-danger"
+          className="button button-danger btn-small demo-danger"
           disabled={busy}
           onClick={handleReset}
         >
           Reset Demo Data
         </button>
       </div>
-      {message && <p className="demo-msg">{message}</p>}
-      {error && <p className="error-message">{error}</p>}
+      {message && <p className="alert alert-success demo-msg">{message}</p>}
+      {error && <p className="alert alert-error">{error}</p>}
     </section>
   );
 }

@@ -30,12 +30,20 @@ enum ReactionType {
 }
 
 enum NotificationType {
+  // Legacy values kept so existing rows remain readable.
   community_confirmed
   admin_verified
   rejected
   resolved
   expired
   post_reaction
+  // Preferred types used by new status/admin notifications.
+  post_community_confirmed
+  post_admin_verified
+  post_admin_unverified
+  post_rejected
+  post_resolved
+  post_expired
 
   @@map("notification_type")
   @@schema("community")

@@ -239,6 +239,12 @@ export const notificationSchema = {
         "resolved",
         "expired",
         "post_reaction",
+        "post_community_confirmed",
+        "post_admin_verified",
+        "post_admin_unverified",
+        "post_rejected",
+        "post_resolved",
+        "post_expired",
       ],
     },
     reactionType: {

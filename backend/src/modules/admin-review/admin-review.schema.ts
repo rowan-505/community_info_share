@@ -7,6 +7,7 @@ export const ADMIN_STATUS_ACTIONS = {
   reject: PostStatus.rejected,
   resolve: PostStatus.resolved,
   expire: PostStatus.expired,
+  unverify: PostStatus.community_confirmed,
 } as const;
 
 export type AdminAction = keyof typeof ADMIN_STATUS_ACTIONS;

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { authApi } from "./api/authApi";
+import { notificationsApi } from "./api/notificationsApi";
 import { clearTokens, getAccessToken } from "./auth/tokenStorage";
 import { DemoToolbar } from "./components/DemoToolbar";
 import { NavHeader } from "./components/NavHeader";
@@ -18,6 +19,21 @@ function App() {
   const [freeBoardRefreshKey, setFreeBoardRefreshKey] = useState(0);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+
+  const refreshUnreadCount = useCallback(async (nextUser: AuthUser | null) => {
+    if (!nextUser) {
+      setUnreadNotificationCount(0);
+      return;
+    }
+
+    try {
+      const items = await notificationsApi.getNotifications();
+      setUnreadNotificationCount(items.filter((item) => !item.isRead).length);
+    } catch {
+      setUnreadNotificationCount(0);
+    }
+  }, []);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -28,10 +44,13 @@ function App() {
 
     authApi
       .me()
-      .then(setUser)
+      .then(async (nextUser) => {
+        setUser(nextUser);
+        await refreshUnreadCount(nextUser);
+      })
       .catch(() => clearTokens())
       .finally(() => setAuthLoading(false));
-  }, []);
+  }, [refreshUnreadCount]);
 
   function handlePostCreated() {
     setFreeBoardRefreshKey((key) => key + 1);
@@ -40,6 +59,7 @@ function App() {
 
   function handleAuthenticated(nextUser: AuthUser) {
     setUser(nextUser);
+    void refreshUnreadCount(nextUser);
     setCurrentView("free");
   }
 
@@ -47,25 +67,33 @@ function App() {
   // the presenter stays on whichever board/panel they are demonstrating.
   function handleDemoAuthenticated(nextUser: AuthUser) {
     setUser(nextUser);
+    void refreshUnreadCount(nextUser);
   }
 
   // Bump the shared refresh key so both boards refetch after demo data changes.
   function handleDemoDataChanged() {
     setFreeBoardRefreshKey((key) => key + 1);
+    void refreshUnreadCount(user);
+  }
+
+  function handlePostsChanged() {
+    setFreeBoardRefreshKey((key) => key + 1);
+    void refreshUnreadCount(user);
   }
 
   function handleLogout() {
     void authApi.logout();
     setUser(null);
+    setUnreadNotificationCount(0);
     setCurrentView("free");
   }
 
   if (authLoading) {
-    return <p className="status-message">Loading...</p>;
+    return <p className="status-message alert">Loading...</p>;
   }
 
   return (
-    <div className="app">
+    <div className="app app-shell app-container">
       <DemoToolbar
         user={user}
         onAuthenticated={handleDemoAuthenticated}
@@ -74,6 +102,7 @@ function App() {
       <NavHeader
         currentView={currentView}
         user={user}
+        unreadNotificationCount={unreadNotificationCount}
         onNavigate={setCurrentView}
         onLogout={handleLogout}
       />
@@ -90,18 +119,27 @@ function App() {
           ) : (
             <section className="view">
               <h2>Create Post</h2>
-              <p className="error-message">You must be logged in to create a post.</p>
+              <p className="alert alert-error">
+                You must be logged in to create a post.
+              </p>
               <button
                 type="button"
-                className="btn"
+                className="button button-primary"
                 onClick={() => setCurrentView("auth")}
               >
                 Go to Login
               </button>
             </section>
           ))}
-        {currentView === "admin" && <AdminReview user={user} />}
-        {currentView === "notifications" && <Notifications user={user} />}
+        {currentView === "admin" && (
+          <AdminReview user={user} onPostsChanged={handlePostsChanged} />
+        )}
+        {currentView === "notifications" && (
+          <Notifications
+            user={user}
+            onUnreadCountChange={setUnreadNotificationCount}
+          />
+        )}
         {currentView === "auth" && (
           <AuthView onAuthenticated={handleAuthenticated} />
         )}

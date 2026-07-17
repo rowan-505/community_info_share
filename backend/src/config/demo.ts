@@ -54,11 +54,13 @@ export function getDemoUserByKey(key: DemoUserKey): DemoUserConfig {
 }
 
 /**
- * Demo Mode is active only when DEMO_MODE=true AND NODE_ENV is not production.
- * Checked at request time so production can never expose demo routes and Demo
- * Mode never bypasses real authentication.
+ * Demo Mode is active when DEMO_MODE=true.
+ *
+ * Showcase deployments may set DEMO_MODE=true even with NODE_ENV=production so
+ * class demos work. Real production must keep DEMO_MODE=false (or unset).
+ * Demo Mode never bypasses JWT or role checks — demo login still mints real
+ * tokens and Demo Admin still needs the admin role.
  */
 export function isDemoModeEnabled(): boolean {
-  const nodeEnv = process.env.NODE_ENV ?? "development";
-  return process.env.DEMO_MODE === "true" && nodeEnv !== "production";
+  return process.env.DEMO_MODE === "true";
 }

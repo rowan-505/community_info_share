@@ -59,7 +59,7 @@ export function FreeBoard({ refreshKey }: FreeBoardProps) {
     }
   }
 
-  if (loading) return <p className="status-message">Loading posts...</p>;
+  if (loading) return <p className="status-message alert">Loading posts...</p>;
 
   return (
     <section className="view">
@@ -67,8 +67,13 @@ export function FreeBoard({ refreshKey }: FreeBoardProps) {
       <p className="view-note">
         Reactions are saved to the API. You must be logged in to react.
       </p>
-      {error && <p className="error-message">{error}</p>}
-      {posts.length === 0 && <p>No posts yet.</p>}
+      {error && <p className="alert alert-error">{error}</p>}
+      {posts.length === 0 && (
+        <div className="card empty-state post-empty-state">
+          <h3>No posts yet</h3>
+          <p>Create a post or run the demo flow.</p>
+        </div>
+      )}
       {posts.map((post) => (
         <PostCard
           key={post.id}

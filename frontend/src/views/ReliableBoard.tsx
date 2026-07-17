@@ -42,18 +42,23 @@ export function ReliableBoard({ refreshKey }: ReliableBoardProps) {
     };
   }, [refreshKey]);
 
-  if (loading) return <p className="status-message">Loading posts...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (loading) return <p className="status-message alert">Loading posts...</p>;
+  if (error) return <p className="alert alert-error">{error}</p>;
 
   return (
     <section className="view">
       <h2>Reliable Board</h2>
       <p className="view-note">
-        Posts with community_confirmed or admin_verified status from the API.
+        Posts marked Community Confirmed or Admin Verified by the API.
       </p>
-      {posts.length === 0 && <p>No reliable posts yet.</p>}
+      {posts.length === 0 && (
+        <div className="card empty-state post-empty-state">
+          <h3>No posts yet</h3>
+          <p>Create a post or run the demo flow.</p>
+        </div>
+      )}
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard key={post.id} post={post} boardLabel="Reliable Board" />
       ))}
     </section>
   );

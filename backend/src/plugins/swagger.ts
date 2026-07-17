@@ -19,13 +19,20 @@ async function swaggerPlugin(app: import("fastify").FastifyInstance) {
       },
       tags: [
         { name: "Health", description: "Service health checks" },
-        { name: "Auth", description: "Registration, login, and current user" },
+        {
+          name: "Auth",
+          description: "Registration, login, refresh, logout, and current user",
+        },
         { name: "Community Posts", description: "Public boards and post creation" },
         { name: "Reactions", description: "Post reactions and trust score" },
         { name: "Admin Review", description: "Admin post review actions" },
         { name: "Notifications", description: "In-app user notifications" },
         { name: "Moderation", description: "Admin user suspend/ban/unban controls" },
-        { name: "Demo", description: "Development-only demo login and data helpers" },
+        {
+          name: "Demo",
+          description:
+            "Showcase helpers enabled only when DEMO_MODE=true (real JWTs, no auth bypass)",
+        },
       ],
       components: {
         securitySchemes: {
@@ -33,7 +40,8 @@ async function swaggerPlugin(app: import("fastify").FastifyInstance) {
             type: "http",
             scheme: "bearer",
             bearerFormat: "JWT",
-            description: "JWT token from /auth/login or /auth/register",
+            description:
+              "Access JWT from /auth/login or /auth/refresh (register does not issue a token)",
           },
         },
       },

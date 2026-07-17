@@ -12,10 +12,10 @@ function requestMeta(request: FastifyRequest) {
 }
 
 /**
- * Development-only Demo Mode routes. This whole plugin is registered only when
- * `isDemoModeEnabled()` is true (see app.ts), so in production the routes do
- * not exist (404). The per-request `demoGuard` is defense-in-depth in case the
- * process env changes after boot.
+ * Demo Mode routes. This whole plugin is registered only when
+ * `isDemoModeEnabled()` / env.demoMode is true (see app.ts), so when Demo Mode
+ * is off the routes do not exist (404). The per-request `demoGuard` is
+ * defense-in-depth in case the process env changes after boot.
  */
 export async function demoRoutes(app: FastifyInstance): Promise<void> {
   const demoGuard = async (_request: FastifyRequest, reply: FastifyReply) => {
@@ -47,7 +47,7 @@ export async function demoRoutes(app: FastifyInstance): Promise<void> {
           tags: ["Demo"],
           summary,
           description:
-            "Development only. Issues a real backend-signed JWT session for the fixed demo user.",
+            "Showcase only (DEMO_MODE=true). Issues a real backend-signed JWT session for the fixed demo user.",
           response: {
             200: { description: "Demo session", ...{ $ref: "SessionResponse#" } },
             403: commonErrors[403],

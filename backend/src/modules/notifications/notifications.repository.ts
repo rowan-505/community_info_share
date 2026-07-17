@@ -1,11 +1,11 @@
-import type { NotificationType, PostStatus, ReactionType } from "@prisma/client";
+import type { PostStatus, ReactionType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import type { FastifyError } from "fastify";
 import { prisma } from "../../db/prisma.js";
 import {
-  isNotifiableStatusChange,
   notificationContent,
   reactionNotificationContent,
+  resolveStatusNotificationType,
   type NotificationItem,
 } from "./notifications.types.js";
 
@@ -61,6 +61,12 @@ function toNotificationItem(
 }
 
 export const notificationsRepository = {
+  /**
+   * Notify the post uploader about a status change. Skips when:
+   * - the transition is not notifiable
+   * - the recipient is missing (caller should pass a real authorId)
+   * - actor and recipient are the same user (no self-noise)
+   */
   async createForPostStatusChange(
     client: TransactionClient | typeof prisma,
     params: {
@@ -69,18 +75,30 @@ export const notificationsRepository = {
       postTitle: string;
       previousStatus: PostStatus;
       newStatus: PostStatus;
+      actorUserId?: bigint | null;
     },
   ): Promise<void> {
-    if (!isNotifiableStatusChange(params.previousStatus, params.newStatus)) {
+    const type = resolveStatusNotificationType(
+      params.previousStatus,
+      params.newStatus,
+    );
+    if (!type) {
       return;
     }
 
-    const type = params.newStatus as Exclude<NotificationType, "post_reaction">;
+    if (
+      params.actorUserId != null &&
+      params.actorUserId === params.authorId
+    ) {
+      return;
+    }
+
     const content = notificationContent(type, params.postTitle);
 
     await client.notification.create({
       data: {
         userId: params.authorId,
+        actorUserId: params.actorUserId ?? null,
         type,
         title: content.title,
         message: content.message,
@@ -106,6 +124,10 @@ export const notificationsRepository = {
       reactionType: ReactionType;
     },
   ): Promise<void> {
+    if (params.recipientUserId === params.actorUserId) {
+      return;
+    }
+
     const content = reactionNotificationContent(
       params.actorDisplayName,
       params.reactionType,
@@ -133,6 +155,15 @@ export const notificationsRepository = {
     });
 
     return notifications.map(toNotificationItem);
+  },
+
+  async countUnreadByUserPublicId(userPublicId: string): Promise<number> {
+    return prisma.notification.count({
+      where: {
+        user: { publicId: userPublicId },
+        isRead: false,
+      },
+    });
   },
 
   async markAsRead(

@@ -1,7 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { loadEnv } from "./config/env.js";
-import { isDemoModeEnabled } from "./config/demo.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { adminReviewRoutes } from "./modules/admin-review/admin-review.routes.js";
 import { adminUsersRoutes } from "./modules/admin-users/admin-users.routes.js";
@@ -43,12 +42,13 @@ export async function buildApp() {
   await app.register(adminUsersRoutes);
   await app.register(notificationsRoutes);
 
-  // Development-only Demo Mode: registered ONLY when DEMO_MODE=true and
-  // NODE_ENV is not production, so the /demo/* routes do not exist otherwise.
-  if (isDemoModeEnabled()) {
+  // Demo Mode: registered ONLY when DEMO_MODE=true (env.demoMode). Showcase
+  // deployments may enable this intentionally; real production must keep
+  // DEMO_MODE=false. Demo Mode never bypasses JWT or role checks.
+  if (env.demoMode) {
     await app.register(demoRoutes);
     app.log.warn(
-      "Demo Mode is ENABLED (/demo/*). Development/classroom only — never enable in production.",
+      "Demo Mode is ENABLED (/demo/*). Showcase/classroom only — disable DEMO_MODE for real production.",
     );
   }
 

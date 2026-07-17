@@ -65,12 +65,12 @@ export async function adminUsersRoutes(app: FastifyInstance): Promise<void> {
 
   moderationAction(
     "/admin/users/:publicId/suspend",
-    "Suspend a user (can log in, cannot create posts or react)",
+    "Suspend a user (account_status → disabled; cannot log in or use protected features)",
     "suspend",
   );
   moderationAction(
     "/admin/users/:publicId/ban",
-    "Ban a user (cannot log in; sessions revoked)",
+    "Ban a user (account_status → disabled, is_active → false; sessions revoked)",
     "ban",
   );
   moderationAction(

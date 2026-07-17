@@ -26,11 +26,18 @@ export function CreatePost({ onCreated }: CreatePostProps) {
   }
 
   return (
-    <section className="view">
-      <h2>Create Post</h2>
-      <p className="view-note">New posts are sent to the backend API.</p>
-      {error && <p className="error-message">{error}</p>}
-      <CreatePostForm onSubmit={handleSubmit} submitting={loading} />
+    <section className="view create-post-view">
+      <div className="card create-post-card">
+        <div className="create-post-header">
+          <h2>Create Community Post</h2>
+          <p className="view-note">
+            Share local updates, safety alerts, transport changes, or public
+            information.
+          </p>
+        </div>
+        {error && <p className="alert alert-error">{error}</p>}
+        <CreatePostForm onSubmit={handleSubmit} submitting={loading} />
+      </div>
     </section>
   );
 }

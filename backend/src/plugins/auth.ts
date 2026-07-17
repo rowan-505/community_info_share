@@ -3,8 +3,7 @@ import fastifyJwt from "@fastify/jwt";
 import fp from "fastify-plugin";
 import {
   canCreateContent,
-  isBannedAccount,
-  isSuspendedAccount,
+  isBlockedAccount,
 } from "../shared/account-status.js";
 import { prisma } from "../db/prisma.js";
 
@@ -55,8 +54,9 @@ async function authPlugin(app: import("fastify").FastifyInstance) {
 
   /**
    * Re-reads the current account from app_auth.auth_users by public_id and
-   * ensures it may create content (posts / reactions). Suspended and banned
-   * accounts are blocked. Trusts the JWT only for identity (`sub`).
+   * ensures it may create content (posts / reactions). Any non-active account
+   * (disabled / deleted / is_active false) is blocked. Trusts the JWT only
+   * for identity (`sub`).
    */
   app.decorate(
     "requireActiveAccount",
@@ -81,17 +81,10 @@ async function authPlugin(app: import("fastify").FastifyInstance) {
         });
       }
 
-      if (isBannedAccount(user.isActive, user.accountStatus)) {
+      if (isBlockedAccount(user.isActive, user.accountStatus)) {
         return reply.status(403).send({
           error: "Forbidden",
-          message: "Account is banned or disabled",
-        });
-      }
-
-      if (isSuspendedAccount(user.accountStatus)) {
-        return reply.status(403).send({
-          error: "Forbidden",
-          message: "Account is suspended",
+          message: "Account is disabled",
         });
       }
 

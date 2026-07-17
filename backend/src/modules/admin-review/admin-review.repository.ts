@@ -48,6 +48,12 @@ function createNotFoundError(message: string): FastifyError {
   return error;
 }
 
+function createBadRequestError(message: string): FastifyError {
+  const error = new Error(message) as FastifyError;
+  error.statusCode = 400;
+  return error;
+}
+
 const postInclude = {
   author: true,
   reactions: true,
@@ -66,14 +72,30 @@ export const adminReviewRepository = {
   async updateStatus(
     publicId: string,
     status: PrismaPostStatus,
+    actorPublicId: string,
+    options?: { requireCurrentStatus?: PrismaPostStatus },
   ): Promise<CommunityPost> {
     return prisma.$transaction(async (tx) => {
-      const existing = await tx.communityPost.findUnique({
-        where: { publicId },
-      });
+      const [existing, actor] = await Promise.all([
+        tx.communityPost.findUnique({ where: { publicId } }),
+        tx.authUser.findUnique({ where: { publicId: actorPublicId } }),
+      ]);
 
       if (!existing) {
         throw createNotFoundError("Post not found");
+      }
+
+      if (!actor) {
+        throw createNotFoundError("Admin actor not found");
+      }
+
+      if (
+        options?.requireCurrentStatus &&
+        existing.status !== options.requireCurrentStatus
+      ) {
+        throw createBadRequestError(
+          `Post must be ${options.requireCurrentStatus} to perform this action (current: ${existing.status})`,
+        );
       }
 
       const post = await tx.communityPost.update({
@@ -84,6 +106,7 @@ export const adminReviewRepository = {
 
       await notificationsRepository.createForPostStatusChange(tx, {
         authorId: existing.authorId,
+        actorUserId: actor.id,
         postId: existing.id,
         postTitle: existing.title,
         previousStatus: existing.status,

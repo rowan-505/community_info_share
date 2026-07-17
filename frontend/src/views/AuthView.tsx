@@ -35,71 +35,82 @@ export function AuthView({ onAuthenticated }: AuthViewProps) {
   }
 
   return (
-    <section className="view">
-      <h2>{mode === "login" ? "Login" : "Register"}</h2>
-      <p className="view-note">
-        {mode === "login"
-          ? "Log in to create community posts."
-          : "Create an account to post on the community board."}
-      </p>
+    <section className="view auth-view">
+      <div className="card auth-card">
+        <div className="auth-card-header">
+          <h2>{mode === "login" ? "Login" : "Register"}</h2>
+          <p className="view-note">
+            {mode === "login"
+              ? "Log in to create community posts."
+              : "Create an account to post on the community board."}
+          </p>
+        </div>
 
-      <div className="auth-toggle">
-        <button
-          type="button"
-          className={`btn ${mode === "login" ? "btn-active" : ""}`}
-          onClick={() => setMode("login")}
-        >
-          Login
-        </button>
-        <button
-          type="button"
-          className={`btn ${mode === "register" ? "btn-active" : ""}`}
-          onClick={() => setMode("register")}
-        >
-          Register
-        </button>
-      </div>
+        <div className="auth-toggle" aria-label="Authentication mode">
+          <button
+            type="button"
+            className={`button ${mode === "login" ? "button-primary" : "button-secondary"}`}
+            onClick={() => setMode("login")}
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            className={`button ${mode === "register" ? "button-primary" : "button-secondary"}`}
+            onClick={() => setMode("register")}
+          >
+            Register
+          </button>
+        </div>
 
-      {error && <p className="error-message">{error}</p>}
+        {error && <p className="alert alert-error">{error}</p>}
 
-      <form className="create-form" onSubmit={handleSubmit}>
-        {mode === "register" && (
-          <label>
-            Display name
+        <form className="form auth-form" onSubmit={handleSubmit}>
+          {mode === "register" && (
+            <label className="form-group">
+              <span>Display name</span>
+              <input
+                className="input"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </label>
+          )}
+          <label className="form-group">
+            <span>Email</span>
             <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              className="input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
             />
           </label>
-        )}
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+          <label className="form-group">
+            <span>Password</span>
+            <input
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={mode === "register" ? 6 : 1}
+              disabled={loading}
+            />
+          </label>
+          <button
+            type="submit"
+            className="button button-primary auth-submit-button"
             disabled={loading}
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={mode === "register" ? 6 : 1}
-            disabled={loading}
-          />
-        </label>
-        <button type="submit" className="btn" disabled={loading}>
-          {loading ? "Please wait..." : mode === "login" ? "Login" : "Register"}
-        </button>
-      </form>
+          >
+            {loading ? "Please wait..." : mode === "login" ? "Login" : "Register"}
+          </button>
+        </form>
+      </div>
     </section>
   );
 }

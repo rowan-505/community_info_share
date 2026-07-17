@@ -4,7 +4,7 @@ import {
   isDemoModeEnabled,
   type DemoUserKey,
 } from "../../config/demo.js";
-import { isBannedAccount } from "../../shared/account-status.js";
+import { isBlockedAccount } from "../../shared/account-status.js";
 import { AuthError, authService } from "../auth/auth.service.js";
 import type { RequestMeta, SessionContext } from "../auth/auth.types.js";
 import { communityPostsService } from "../community-posts/community-posts.service.js";
@@ -43,9 +43,10 @@ export const demoService = {
     meta: RequestMeta,
   ): Promise<SessionContext> {
     const user = await ensureDemoUser(key);
-    // Respect real ban rules even for demo login (suspended may still log in).
-    if (isBannedAccount(user.isActive, user.accountStatus)) {
-      throw new AuthError("Account is banned or disabled", 403);
+    // Respect real moderation rules even for demo login: any disabled /
+    // deleted / inactive account is blocked.
+    if (isBlockedAccount(user.isActive, user.accountStatus)) {
+      throw new AuthError("Account is disabled", 403);
     }
     return authService.issueSessionForUser(user, meta);
   },

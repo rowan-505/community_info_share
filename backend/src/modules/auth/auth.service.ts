@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { isBannedAccount } from "../../shared/account-status.js";
+import { isBlockedAccount } from "../../shared/account-status.js";
 import {
   authRepository,
   mapRoles,
@@ -66,12 +66,12 @@ function toProfile(user: AuthUserWithRoles): AuthProfile {
 
 /**
  * Login / refresh / me gate.
- * - banned / disabled / deleted / inactive → blocked
- * - suspended → allowed (read-only; write routes use requireActiveAccount)
+ * Blocks any account that is not fully active: account_status "disabled"
+ * (used for both Suspend and Ban) or "deleted", or is_active false.
  */
 function assertUserUsable(user: AuthUserWithRoles): void {
-  if (isBannedAccount(user.isActive, user.accountStatus)) {
-    throw new AuthError("Account is banned or disabled", 403);
+  if (isBlockedAccount(user.isActive, user.accountStatus)) {
+    throw new AuthError("Account is disabled", 403);
   }
 }
 

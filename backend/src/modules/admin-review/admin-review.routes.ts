@@ -19,6 +19,7 @@ export async function adminReviewRoutes(app: FastifyInstance): Promise<void> {
         description: "Updated post",
         ...{ $ref: "CommunityPostResponse#" },
       },
+      400: commonErrors[400],
       401: commonErrors[401],
       403: commonErrors[403],
       404: commonErrors[404],
@@ -30,7 +31,7 @@ export async function adminReviewRoutes(app: FastifyInstance): Promise<void> {
     schema: {
       tags: ["Admin Review"],
       summary: "List all posts for review",
-      description: "Requires admin or validator role.",
+      description: "Requires admin or super_admin role.",
       security: bearerSecurity,
       response: {
         200: {
@@ -54,7 +55,23 @@ export async function adminReviewRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const { publicId } = request.params as { publicId: string };
-      const post = await adminReviewService.verify(publicId);
+      const post = await adminReviewService.verify(publicId, request.user.sub);
+      return { data: post };
+    },
+  );
+
+  app.post(
+    "/admin/community/posts/:publicId/unverify",
+    {
+      ...reviewerOnly,
+      schema: postActionSchema(
+        "Unverify post",
+        "Sets an admin_verified post back to community_confirmed. Returns 400 if the post is not currently admin_verified.",
+      ),
+    },
+    async (request) => {
+      const { publicId } = request.params as { publicId: string };
+      const post = await adminReviewService.unverify(publicId, request.user.sub);
       return { data: post };
     },
   );
@@ -67,7 +84,7 @@ export async function adminReviewRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const { publicId } = request.params as { publicId: string };
-      const post = await adminReviewService.reject(publicId);
+      const post = await adminReviewService.reject(publicId, request.user.sub);
       return { data: post };
     },
   );
@@ -80,7 +97,7 @@ export async function adminReviewRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const { publicId } = request.params as { publicId: string };
-      const post = await adminReviewService.resolve(publicId);
+      const post = await adminReviewService.resolve(publicId, request.user.sub);
       return { data: post };
     },
   );
@@ -93,7 +110,7 @@ export async function adminReviewRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const { publicId } = request.params as { publicId: string };
-      const post = await adminReviewService.expire(publicId);
+      const post = await adminReviewService.expire(publicId, request.user.sub);
       return { data: post };
     },
   );
